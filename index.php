@@ -3,8 +3,13 @@
 define('POSTAL_CODE', '^[0-9]{5}$');
 define('LASTNAME', '^[A-Za-zéèëêçà]{2,50}(-| )?([A-Za-zéèçà]{2,50})?$');
 define('REGEX_LINKEDIN','^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)');
+define('REGEX_DATE','^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
 define('ARRAY_COUNTRY', ['France', 'Belgique', 'Suisse', 'Luxembourg', 'Allemagne', 'Italie', 'Espagne', 'Portugal']);
 define('ARRAY_LANGAGES', ['HTML/CSS', 'PHP', 'Javascript', 'Python', 'Autres']);
+
+
+$startDate = (date('Y') - 100).'-01-01';
+$currentDate = Date('Y-m-d');
 
 if($_SERVER['REQUEST_METHOD'] =='POST'){
     // Tableau d'erreurs
@@ -61,27 +66,51 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
 
 
     // LANGAGE
+    // Nettoyage de $langage
     $langage = filter_input(INPUT_POST, "langage", FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY);
-    var_dump($langage);
-    if(!empty($langage) && !in_array($langage, ARRAY_LANGAGES)){
-        $error['langage'] = 'Le pays n\'est pas valide';
+    
+    // Validation de $langage
+    if($langage !=null){
+        foreach($langage as $value){
+        if(!empty($langage) && !in_array($value, ARRAY_LANGAGES)){
+                $error['langage'] = 'Le langage n\'est pas valide';
+            }
+    }
+    }
+    
+    // DATE DE NAISSANCE 
+    $dateBirth = filter_input(INPUT_POST, 'dateBirth', FILTER_SANITIZE_NUMBER_INT);
+    
+    if(!empty($dateBirth)){
+        $isOk = filter_var($dateBirth, FILTER_VALIDATE_REGEXP, array("options"=>array("regexp"=>'/'.REGEX_DATE.'/')));
+        if((!$isOk || $dateBirth >= $currentDate || $dateBirth <= $startDate)){
+            $error['dateBirth'] = 'La date de naissance n\'est pas valide.';
+        }
+    }
+
+    // CIVILITE
+    $gender = intval(filter_input(INPUT_POST, 'gender', FILTER_SANITIZE_NUMBER_INT));
+    
+    if(!empty($gender)){
+        $isOk = filter_var($gender, FILTER_VALIDATE_INT, array("options"=>array("min_range"=> 0, "max_range"=> 1)));
+        if((!$isOk)){
+            $error['gender'] = 'Le genre n\'est pas valide.';
+        }
     }
 
 
 
-    // Date 
-    // Civilité
     // Mdp 
     // Photo
     // Experience
 
     // GENRE
-    $gender = filter_input(INPUT_POST, 'gender', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    if(empty($gender)){
-        $error['gender'] = 'Veuillez renseigner un genre valide.';
-    } elseif (!in_array($gender,['Mr', 'Mme'])) {
-        $error['gender'] = 'Le genre n\'est pas valide';
-    }
+    // $gender = filter_input(INPUT_POST, 'gender', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    // if(empty($gender)){
+    //     $error['gender'] = 'Veuillez renseigner un genre valide.';
+    // } elseif (!in_array($gender,['Mr', 'Mme'])) {
+    //     $error['gender'] = 'Le genre n\'est pas valide';
+    // }
 } 
 ?>
 <!DOCTYPE html>
@@ -89,6 +118,7 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta description="Hello, voici un super formulaire à remplir ! Tchousss">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="./public/assets/css/style.css">
     <title>Formulaire PHP - Projet TP</title>
@@ -98,7 +128,8 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
 
     <main>
         <div class="container">
-            <form action="" method="POST" class="form" novalidate>
+            <?php if ($_SERVER['REQUEST_METHOD'] !='POST' || !empty($error)){ ?>
+                <form action="" method="POST" class="form" novalidate>
             
                 <div class="row form-card p-5">
                 <div class="row"><?= $lastname??''?></div>
@@ -126,15 +157,17 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                             <div>
                                 <label for="gender">Votre civilité *</label>
                             </div>
+                            
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="gender" value="Mr">
-                                <label class="form-check-label" for="inlineRadio1">Mr</label>
+                                <input class="form-check-input" type="radio" name="gender" id="0" value="0">
+                                <label class="form-check-label" for="0">Mr</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="gender" value="Mme">
-                                <label class="form-check-label" for="inlineRadio2">Mme</label>
+                                <input class="form-check-input" type="radio" name="gender" id="1" value="1">
+                                <label class="form-check-label" for="1">Mme</label>
                             </div>
-                            <div class="alert-message"><?=$error['gender']??''?></div>
+                            <div class="alert-message"><?= $error['gender']??''?></div>
+                            
                         </div>
                         <!-- Name OK-->
                         <div class="mb-3">
@@ -150,8 +183,16 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                         </div>
                         <!-- Birth date NO-->
                         <div class="mb-3">
-                            <label for="dateBirth" class="form-label">Votre année de naissance *</label>
-                            <input type="date" name="dateBirth" class="form-control form-control-lg" id="dateBirth" min="1950-01-01" max="2030-31-12" >
+                            <label for="dateBirth" class="form-label">Votre date de naissance *</label>
+                            <input value="<?=$dateBirth??''?>" 
+                            pattern= "<?=REGEX_DATE?>"
+                            type="date" 
+                            name="dateBirth" 
+                            class="form-control form-control-lg" 
+                            id="dateBirth" 
+                            min="<?=$startDate?>" 
+                            max="<?=$currentDate?>" >
+                            <div class="alert-message"><?= $error['dateBirth']??''?></div>
                         </div>
                         <!-- Birth Country NO-->
                         <div class="mb-3">
@@ -210,23 +251,14 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                             <label for="langage">Quels langages web connaissez-vous ?</label>
                             <div>
                                 <?php foreach (ARRAY_LANGAGES as $langages) { 
-                                    // $isSelected = ($langage && $langage == $langages) ? 'checked' : '';?>
+                                    ?>
                                     <div class='form-check-inline'>
-                                            <input class='form-check-input' name='langage[]' type='checkbox' value="<?=$langages?>" id='<?=$langages?>"' <?=$isSelected?>>
+                                            <input class='form-check-input' name='langage[]' type='checkbox' value='<?=$langages?>' id='<?=$langages?>' <?= (isset($langage) && in_array($langages, $langage)) ? 'checked' : ""?> >
                                             <label class='form-check-label fw-normal' for='<?=$langages?>'><?=$langages?></label>
                                         </div>
                                     <?php
                                     } 
                                 ?>
-                                <!--  -->
-                                
-                                <!--  -->
-                                
-                                <!-- <div class="form-check-inline">
-                                    <input class="form-check-input" name="langage" type="checkbox" value="HTML/CSS" id="langagesInputHTML" selected>
-                                    <label class="form-check-label fw-normal" for="langagesInputHTML">HTML/CSS</label>
-                                </div> -->
-                                
                             </div>
                             <div class="alert-message"><?= $error['langage']??'' ?></div>
                         </div>
@@ -238,11 +270,39 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                     <div>
                         <button type="submit" class="btn btn-submit">Envoyer</button>
                     </div>
-
-                    
-                    
                 </div>
             </form>
+
+            <!-- Lorsque le formulaire passe en POST (toutes les données renseignées), afficher les résultats. -->
+            <?php
+            } else { ?>
+            <div class="row form-card p-5">
+                <div class="col">
+                    <!-- Affichage des réponses -->
+                    <h1>Résultats du formulaire</h1>
+                    <p><strong>Email :</strong> <?= $email ?></p>
+                    <p><strong>Nom :</strong> <?= $lastname ?></p>
+                    <p><strong>Pays de naissance :</strong> <?= $country ?? 'Non renseigné' ?></p>
+                    <p><strong>Code postal :</strong> <?= $zip ?></p>
+                    <p><strong>URL LinkedIn :</strong> <?= $urlLinkedin ?? 'Non renseigné' ?></p>
+                    <p><strong>Langages web :</strong> <?php foreach($langage as $value){echo $value;} ?></p>
+                    <p><strong>Civilité :</strong> <?php 
+                        if($gender==0){
+                            echo "Mr";
+                        } elseif($gender==1) {
+                            echo "Mme";
+                        } else {
+                            echo 'Non renseigné';
+                        }
+                    ?></p>
+                </div>
+            </div>
+            
+            
+            <?php
+            }
+            ?>
+
         </div>
     </main>
 
