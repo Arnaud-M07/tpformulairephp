@@ -4,8 +4,13 @@ define('POSTAL_CODE', '^[0-9]{5}$');
 define('LASTNAME', '^[A-Za-zéèëêçà]{2,50}(-| )?([A-Za-zéèçà]{2,50})?$');
 define('REGEX_LINKEDIN','^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)');
 define('REGEX_DATE','^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+define('REGEX_PASSWORD', '^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$');
+define('REGEX_TEXTAREA', '^[A-Za-z0-9.]{5,1000}$');
 define('ARRAY_COUNTRY', ['France', 'Belgique', 'Suisse', 'Luxembourg', 'Allemagne', 'Italie', 'Espagne', 'Portugal']);
 define('ARRAY_LANGAGES', ['HTML/CSS', 'PHP', 'Javascript', 'Python', 'Autres']);
+define('ARRAY_TYPES', ['image/jpeg', 'image/png']);
+define('UPLOAD_MAX_SIZE', 2*1024*1024);
+
 
 
 $startDate = (date('Y') - 100).'-01-01';
@@ -99,18 +104,68 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
     }
 
 
+    // MOT DE PASSE 
+    // On ne nettoie pas un password
+    $password = filter_input(INPUT_POST, 'password');
+    $confirmPassword = filter_input(INPUT_POST, 'confirmPassword');
 
-    // Mdp 
-    // Photo
-    // Experience
+    if(empty($password) || empty($confirmPassword)){
+        $error['password'] = 'Veuillez renseigner un mot de passe.';
+    } else {
+        $isOk = filter_var($password, FILTER_VALIDATE_REGEXP, array("options"=>array("regexp"=>'/'.REGEX_PASSWORD.'/')));
+        $isOk2 = filter_var($confirmPassword, FILTER_VALIDATE_REGEXP, array("options"=>array("regexp"=>'/'.REGEX_PASSWORD.'/')));
+        if ($isOk!=$isOk2){
+            $error['password'] = 'Les champs ne sont pas identiques';
+        } elseif (!$isOk || !$isOk2){
+            $error['password'] = 'Le mot de passe n\'est pas valide.';
+        } else {
+            // Crée une clé de hachage pour le mot de passe
+            $pass_hash = password_hash($isOk2, PASSWORD_DEFAULT);
+        }
+    }
 
-    // GENRE
-    // $gender = filter_input(INPUT_POST, 'gender', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    // if(empty($gender)){
-    //     $error['gender'] = 'Veuillez renseigner un genre valide.';
-    // } elseif (!in_array($gender,['Mr', 'Mme'])) {
-    //     $error['gender'] = 'Le genre n\'est pas valide';
-    // }
+    // EXPERIENCE
+    $textArea = filter_input(INPUT_POST, 'textArea', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+    if(!empty($textArea)){
+        if (strlen($textArea) > 1000){
+            $error['textArea'] = 'Le texte renseigné n\'est pas valide.(1000 caractères max)';
+        }
+
+        // Methode REGEX
+        // $isOk = filter_var($textArea, FILTER_VALIDATE_REGEXP, array("options"=>array("regexp"=>'/'.REGEX_TEXTAREA.'/')));
+        // if(!$isOk){
+        //     $error['textArea'] = 'Le texte renseigné n\'est pas valide.';
+        // }
+    }
+
+    // PHOTO
+    
+    try {
+        if(empty($_FILES['photo']['name'])){
+            throw new Exception("Ajoutez une photo.");
+        } 
+        if($_FILES['photo']['error']!=0){
+            throw new Exception("Une erreur s'est produite.");
+        }
+        if (!in_array($_FILES['photo']['type'], ARRAY_TYPES)){
+            throw new Exception("Le format de l'image n'est pas correct.");
+        }
+        if($_FILES['photo']['size'] > UPLOAD_MAX_SIZE){
+            throw new Exception("Le fichier est trop lourd.");
+        }
+        $filename = uniqid("img_");
+        $extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+        
+        $from = $_FILES['photo']['tmp_name'];
+        $to = './public/uploads/users/'. $filename.'.'. $extension;
+        
+        move_uploaded_file($from, $to);
+        
+    } catch (\Throwable $th) {
+        $error['photo'] = $th->getMessage();
+    }
+
 } 
 ?>
 <!DOCTYPE html>
@@ -129,7 +184,7 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
     <main>
         <div class="container">
             <?php if ($_SERVER['REQUEST_METHOD'] !='POST' || !empty($error)){ ?>
-                <form action="" method="POST" class="form" novalidate>
+                <form action="" method="POST" class="form" novalidate enctype="multipart/form-data">
             
                 <div class="row form-card p-5">
                 <div class="row"><?= $lastname??''?></div>
@@ -145,12 +200,25 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label for="password">Votre mot de passe *</label>
-                                <input pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" name="password" type="password" class="form-control form-control-lg" id="password" placeholder="Mot de passe" >
+                                <input pattern= "<?=REGEX_PASSWORD?>"
+                                name="password" 
+                                type="password" 
+                                class="form-control form-control-lg" 
+                                id="password" 
+                                placeholder="Mot de passe" 
+                                required>
                             </div>
                             <div class="col-6">
                                 <label for="confirmPassword">Confirmez le mot de passe *</label>
-                                <input pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" name="confirmPassword" type="password" class="form-control form-control-lg" id="confirmPassword" placeholder="Mot de passe" >
+                                <input pattern= "<?=REGEX_PASSWORD?>"
+                                name="confirmPassword" 
+                                type="password" 
+                                class="form-control form-control-lg" 
+                                id="confirmPassword" 
+                                placeholder="Mot de passe" 
+                                required>
                             </div>
+                            <div class="alert-message"><?= $error['password']?? ''?></div>
                         </div>
                         <!-- Civility NO-->
                         <div class="mb-3">
@@ -228,11 +296,17 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                             <div class="alert-message"><?= $error['zip']??'' ?></div>
                         </div>
                         
+
                         <!-- Profil picture NO-->
                         <div class="mb-3">
                             <label for="formFileLg" class="form-label mb-0">Votre photo de profil</label>
-                            <input class="form-control form-control-lg" id="formFileLg" type="file">
+                            <input class="form-control form-control-lg" name="photo" id="formFileLg" type="file" accept=".png, image/jpeg">
                         </div>
+                        <div class="alert-message"><?= $error['photo']??''?></div>
+
+
+
+
                         <!-- URL Linkedin OK-->
                         <div class="mb-3">
                             <label for="url">URL de votre compte LinkedIn</label>
@@ -264,8 +338,16 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                         </div>
                         <!-- Text Area NO-->
                         <div class="">
-                            <textarea pattern="^[A-Za-z0-9.]{5,1000}$" name="textArea" class="form-control" placeholder="Racontez une expérience avec la programmation et/ou l'informatique que vous auriez pu avoir." id="textArea" style="height: 160px" minlength="20" maxlength="500"></textarea>
+                            <textarea pattern= "<?=REGEX_TEXTAREA?>" 
+                            name="textArea" 
+                            class="form-control" 
+                            placeholder="Racontez une expérience avec la programmation et/ou l'informatique que vous auriez pu avoir." 
+                            id="textArea" 
+                            style="height: 160px" 
+                            minlength="20" 
+                            maxlength="500"><?=$textArea?? ''?></textarea>
                         </div>
+                        <div class="alert-message"><?= $error['texteArea']??'' ?></div>
                     </div>
                     <div>
                         <button type="submit" class="btn btn-submit">Envoyer</button>
@@ -295,6 +377,8 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
                             echo 'Non renseigné';
                         }
                     ?></p>
+                    <p><strong>Mot de passe :</strong> <?= $confirmPassword ?? 'Non renseigné' ?></p>
+                    <p><strong>Texte : </strong> <?= $textArea ?? 'Non renseigné' ?></p>
                 </div>
             </div>
             
