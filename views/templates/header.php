@@ -11,7 +11,7 @@
 </head>
 <body>
     <header>
-        <?php include __DIR__ . '/./navbar.php' ?>
+        <?php include __DIR__ . '/navbar.php' ?>
     </header>
     <main>
 

@@ -195,7 +195,7 @@
                 ?></p>
                 <p><strong>Mot de passe :</strong> <?= $pass_hash ?? 'Non renseigné' ?></p>
                 <p><strong>Texte : </strong> <?= $textArea ?? 'Non renseigné' ?></p>
-                <p><strong>Photo de profil : </strong> <img src="<?=$to?>" alt="Photo de profil"></p>
+                <p><strong>Photo de profil : </strong> <img src="/public/uploads/users/<?=$toFront?>" alt="Photo de profil"></p>
             </div>
         </div>
         

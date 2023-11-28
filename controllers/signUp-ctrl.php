@@ -146,7 +146,8 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
         $extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
         
         $from = $_FILES['photo']['tmp_name'];
-        $to = './public/uploads/users/'. $filename.'.'. $extension;
+        $to = __DIR__ . '/../public/uploads/users/'. $filename.'.'. $extension;
+        $toFront = $filename.'.'. $extension;
         
         move_uploaded_file($from, $to);
         
