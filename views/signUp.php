@@ -2,9 +2,9 @@
 <div class="container container-form">
         <?php if ($_SERVER['REQUEST_METHOD'] !='POST' || !empty($error)){ ?>
             <form action="" method="POST" class="form" novalidate enctype="multipart/form-data">
-        
+
             <div class="row form-card p-5">
-            
+
                 <!-- 1st Col -->
                 <div class="col-12 col-md-6">
                     <!-- email OK-->
@@ -18,21 +18,21 @@
                         <div class="col-6">
                             <label for="password">Votre mot de passe *</label>
                             <input pattern= "<?=REGEX_PASSWORD?>"
-                            name="password" 
-                            type="password" 
-                            class="form-control form-control-lg" 
-                            id="password" 
-                            placeholder="Mot de passe" 
+                            name="password"
+                            type="password"
+                            class="form-control form-control-lg"
+                            id="password"
+                            placeholder="Mot de passe"
                             required>
                         </div>
                         <div class="col-6">
                             <label for="confirmPassword">Confirmez le mot de passe *</label>
                             <input pattern= "<?=REGEX_PASSWORD?>"
-                            name="confirmPassword" 
-                            type="password" 
-                            class="form-control form-control-lg" 
-                            id="confirmPassword" 
-                            placeholder="Mot de passe" 
+                            name="confirmPassword"
+                            type="password"
+                            class="form-control form-control-lg"
+                            id="confirmPassword"
+                            placeholder="Mot de passe"
                             required>
                         </div>
                         <div class="alert-message"><?= $error['password']?? ''?></div>
@@ -42,7 +42,7 @@
                         <div>
                             <label for="gender">Votre civilité *</label>
                         </div>
-                        
+
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="gender" id="0" value="0">
                             <label class="form-check-label" for="0">Mr</label>
@@ -52,30 +52,30 @@
                             <label class="form-check-label" for="1">Mme</label>
                         </div>
                         <div class="alert-message"><?= $error['gender']??''?></div>
-                        
+
                     </div>
                     <!-- Name OK-->
                     <div class="mb-3">
                         <label for="lastname">Votre Nom *</label>
-                        <input pattern="<?=LASTNAME?>" 
-                        value="<?=$lastname??''?>" 
-                        name="lastname" 
-                        type="text" 
-                        class="form-control form-control-lg" 
-                        id="lastname" 
+                        <input pattern="<?=LASTNAME?>"
+                        value="<?=$lastname??''?>"
+                        name="lastname"
+                        type="text"
+                        class="form-control form-control-lg"
+                        id="lastname"
                         placeholder="Dupont">
                         <div class="alert-message"><?= $error['lastname']??''?></div>
                     </div>
                     <!-- Birth date NO-->
                     <div class="mb-3">
                         <label for="dateBirth" class="form-label">Votre date de naissance *</label>
-                        <input value="<?=$dateBirth??''?>" 
+                        <input value="<?=$dateBirth??''?>"
                         pattern= "<?=REGEX_DATE?>"
-                        type="date" 
-                        name="dateBirth" 
-                        class="form-control form-control-lg" 
-                        id="dateBirth" 
-                        min="<?=$startDate?>" 
+                        type="date"
+                        name="dateBirth"
+                        class="form-control form-control-lg"
+                        id="dateBirth"
+                        min="<?=$startDate?>"
                         max="<?=$currentDate?>" >
                         <div class="alert-message"><?= $error['dateBirth']??''?></div>
                     </div>
@@ -87,7 +87,7 @@
                             <?php foreach (ARRAY_COUNTRY as $countries) {
                                 $isSelected = ($country && $country == $countries) ? 'selected' : '';
                                 echo "<option value=\"$countries\" $isSelected>$countries</option>";
-                            } 
+                            }
                             ?>
                         </select>
                         <div class="alert-message"><?=$error['country']??''?></div>
@@ -98,13 +98,13 @@
                     <!-- Postal ZIP OK-->
                     <div class="mb-3">
                         <label for="inputZip">Votre code postal *</label>
-                        <input 
-                            pattern="<?=POSTAL_CODE?>" 
-                            value="<?=$zip??''?>" 
-                            name="zip" 
-                            type="text" 
-                            class="form-control form-control-lg" 
-                            id="inputZip" 
+                        <input
+                            pattern="<?=POSTAL_CODE?>"
+                            value="<?=$zip??''?>"
+                            name="zip"
+                            type="text"
+                            class="form-control form-control-lg"
+                            id="inputZip"
                             placeholder="80000"
                             autocomplete="postal-code"
                             inputmode="numeric"
@@ -112,7 +112,7 @@
                             >
                         <div class="alert-message"><?= $error['zip']??'' ?></div>
                     </div>
-                    
+
 
                     <!-- Profil picture NO-->
                     <div class="mb-3">
@@ -124,13 +124,13 @@
                     <!-- URL Linkedin OK-->
                     <div class="mb-3">
                         <label for="url">URL de votre compte LinkedIn</label>
-                        <input value="<?=$urlLinkedin??''?>" 
-                        name="urlLinkedin" 
-                        type="url" 
-                        class="form-control form-control-lg" 
-                        name="url" 
-                        id="url" 
-                        pattern="https://www.linkedin.com/in/" 
+                        <input value="<?=$urlLinkedin??''?>"
+                        name="urlLinkedin"
+                        type="url"
+                        class="form-control form-control-lg"
+                        name="url"
+                        id="url"
+                        pattern="https://www.linkedin.com/in/"
                         placeholder="https://www.linkedin.com/in/profil">
                         <div class="alert-message"><?= $error['urlLinkedin']??'' ?></div>
                     </div>
@@ -139,14 +139,14 @@
                     <div class="mb-3">
                         <label for="langage">Quels langages web connaissez-vous ?</label>
                         <div>
-                            <?php foreach (ARRAY_LANGAGES as $langages) { 
+                            <?php foreach (ARRAY_LANGAGES as $langages) {
                                 ?>
                                 <div class='form-check-inline'>
-                                        <input class='form-check-input' name='langage[]' type='checkbox' value='<?=$langages?>' id='<?=$langages?>' <?= (isset($langage) && in_array($langages, $langage)) ? 'checked' : ""?> >
-                                        <label class='form-check-label fw-normal' for='<?=$langages?>'><?=$langages?></label>
-                                    </div>
+                                    <input class='form-check-input' name='langage[]' type='checkbox' value='<?=$langages?>' id='<?=$langages?>' <?= (isset($langage) && in_array($langages, $langage)) ? 'checked' : ""?> >
+                                    <label class='form-check-label fw-normal' for='<?=$langages?>'><?=$langages?></label>
+                                </div>
                                 <?php
-                                } 
+                                }
                             ?>
                         </div>
                         <div class="alert-message"><?= $error['langage']??'' ?></div>
@@ -154,13 +154,13 @@
 
                     <!-- Text Area NO-->
                     <div class="">
-                        <textarea pattern= "<?=REGEX_TEXTAREA?>" 
-                        name="textArea" 
-                        class="form-control" 
-                        placeholder="Racontez une expérience avec la programmation et/ou l'informatique que vous auriez pu avoir." 
-                        id="textArea" 
-                        style="height: 160px" 
-                        minlength="20" 
+                        <textarea pattern= "<?=REGEX_TEXTAREA?>"
+                        name="textArea"
+                        class="form-control"
+                        placeholder="Racontez une expérience avec la programmation et/ou l'informatique que vous auriez pu avoir."
+                        id="textArea"
+                        style="height: 160px"
+                        minlength="20"
                         maxlength="500"><?=$textArea?? ''?></textarea>
                     </div>
                     <div class="alert-message"><?= $error['texteArea']??'' ?></div>
@@ -184,7 +184,7 @@
                 <p><strong>Code postal :</strong> <?= $zip ?></p>
                 <p><strong>URL LinkedIn :</strong> <?= $urlLinkedin ?? 'Non renseigné' ?></p>
                 <p><strong>Langages web :</strong> <?php foreach($langage as $value){echo $value.' ';} ?></p>
-                <p><strong>Civilité :</strong> <?php 
+                <p><strong>Civilité :</strong> <?php
                     if($gender==0){
                         echo "Mr";
                     } elseif($gender==1) {
@@ -198,7 +198,7 @@
                 <p><strong>Photo de profil : </strong> <img src="/public/uploads/users/<?=$toFront?>" alt="Photo de profil"></p>
             </div>
         </div>
-        
+
         <?php
         }
         ?>
